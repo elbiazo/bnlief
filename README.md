@@ -1,5 +1,5 @@
 # binlief
-Author: **ebiazo** 
+Author: **elbiazo** 
 
 _Converts Elf into Library File_
 
