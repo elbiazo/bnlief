@@ -4,7 +4,7 @@ from tempfile import NamedTemporaryFile
 import platform
 
 
-def generate_c(exported_func, liefbin, org_filename, new_directory):
+def generate_c(exported_func, org_filename, new_directory):
     # Write the main code
     main_code = fr"""#include "{org_filename}.h"
 
@@ -100,7 +100,7 @@ all: {org_filename}
         f.write(makefile_code)
 
 
-def generate_so(bv, org_filename, new_directory):
+def generate_so(bv, org_filename, new_directory, libc_high):
     tempbin = NamedTemporaryFile()
     bv.save(tempbin.name)
     liefbin = lief.parse(tempbin.name)
@@ -122,17 +122,20 @@ def generate_so(bv, org_filename, new_directory):
 
     # Check if it uses glibc >= 2.29. You have to patch or else you will get dlopen error: cannot dynamically load position-independent executable
     # Read more on https://lief-project.github.io/doc/latest/tutdlopen%20error:%20cannot%20dynamically%20load%20position-independent%20executableorials/08_elf_bin2lib.html
-    if float(platform.libc_ver(tempbin.name)[1]) >= 2.29:
+    if float(platform.libc_ver(tempbin.name)[1]) >= 2.29 or libc_high:
         liefbin[lief.ELF.DYNAMIC_TAGS.FLAGS_1].remove(lief.ELF.DYNAMIC_FLAGS_1.PIE)
 
+    for func in liefbin.exported_functions:
+        print(f"{func.name} {hex(func.address)}")
     liefbin.write(f"{new_directory}/{org_filename}.so")
-    generate_c(exported_bv_func, liefbin, org_filename, new_directory)
+    generate_c(exported_bv_func, org_filename, new_directory)
 
 
 def main(bv):
     org_filename = bv.file.original_filename.split("/")[-1]
     new_directory = get_directory_name_input("Directory:")
-    generate_so(bv, org_filename, new_directory)
+    libc_high = bool(get_choice_input("LIBC >=2.29", "LIBC Version", ["NO", "YES"]))
+    generate_so(bv, org_filename, new_directory, libc_high)
 
 
 PluginCommand.register("bnlief", "Converts Elf into Library File", main)
