@@ -80,12 +80,12 @@ void resolve_sym(void *handle);
 
     resolved_func_codes = ""
     for fun in exported_func:
-        resolved_func_codes += fr'''    {fun.name} = dlsym(handle, "{fun.name}");
+        resolved_func_codes += fr"""    {fun.name} = dlsym(handle, "{fun.name}");
     if (!{fun.name}) {{
         printf("dlsym failed for {func.name}\n");
     }}
 
-'''
+"""
 
     resolve_code = fr"""#include "{org_filename}.h"
 {global_func_var_codes}
