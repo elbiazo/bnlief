@@ -88,6 +88,7 @@ void resolve_sym(void *handle);
 """
 
     resolve_code = fr"""#include "{org_filename}.h"
+
 {global_func_var_codes}
 
 void resolve_sym(void *handle) {{
