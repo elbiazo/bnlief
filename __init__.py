@@ -89,7 +89,6 @@ void resolve_sym(void *handle) {{
         f.write(resolve_code)
 
     makefile_code = fr"""CC=gcc
-CFLAGS=-ldl
 
 all: {org_filename}
 
