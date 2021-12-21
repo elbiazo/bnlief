@@ -99,11 +99,15 @@ void resolve_sym(void *handle) {{
         f.write(resolve_code)
 
     makefile_code = fr"""CC=gcc
+CFLAGS=-ldl
 
 all: {org_filename}
 
 {org_filename}: main.c {org_filename}.c
-	$(CC) main.c {org_filename}.c -o {org_filename} -ldl"""
+	$(CC) main.c {org_filename}.c -o {org_filename} $(CFLAGS)
+
+clean:
+	rm -f {org_filename}"""
 
     with open(f"{new_directory}/Makefile", "w") as f:
         f.write(makefile_code)
