@@ -129,4 +129,4 @@ def main(bv):
     generate_so(bv, org_filename, new_directory)
 
 
-PluginCommand.register("binlief", "Converts Elf into Library File", main)
+PluginCommand.register("bnlief", "Converts Elf into Library File", main)
