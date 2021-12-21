@@ -17,6 +17,8 @@ int main (int argc, char** argv) {{
     }}
 
     resolve_sym(handler);
+
+    // Write your code here!
 }}
     """
 
@@ -78,7 +80,12 @@ void resolve_sym(void *handle);
 
     resolved_func_codes = ""
     for fun in exported_func:
-        resolved_func_codes += f'\t{fun.name} = dlsym(handle, "{fun.name}");\n'
+        resolved_func_codes += fr'''    {fun.name} = dlsym(handle, "{fun.name}");
+    if (!{fun.name}) {{
+        printf("dlsym failed for {func.name}\n");
+    }}
+
+'''
 
     resolve_code = fr"""#include "{org_filename}.h"
 {global_func_var_codes}
@@ -120,8 +127,6 @@ def generate_so(bv, org_filename, new_directory, libc_high):
     if float(platform.libc_ver(tempbin.name)[1]) >= 2.29 or libc_high:
         liefbin[lief.ELF.DYNAMIC_TAGS.FLAGS_1].remove(lief.ELF.DYNAMIC_FLAGS_1.PIE)
 
-    for func in liefbin.exported_functions:
-        print(f"{func.name} {hex(func.address)}")
     liefbin.write(f"{new_directory}/{org_filename}.so")
     generate_c(exported_bv_func, org_filename, new_directory)
 
