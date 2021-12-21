@@ -9,7 +9,7 @@ def generate_c(exported_func, liefbin, org_filename, new_directory):
     main_code = fr"""#include "{org_filename}.h"
 
 int main (int argc, char** argv) {{
-    void* handler = dlopen("./stest.so", RTLD_LAZY);
+    void* handler = dlopen("./{org_filename}.so", RTLD_LAZY);
     if (!handler) {{
         printf("dlopen failed: %s\n", dlerror());
         return 1;
@@ -48,8 +48,8 @@ int main (int argc, char** argv) {{
         extern_codes += f"extern {func.name}_t {func.name};\n"
 
     ## Generate function prototypes
-    header_code = fr"""#ifndef STEST_H
-#define STEST_H
+    header_code = fr"""#ifndef {org_filename.upper()}_H
+#define {org_filename.upper()}_H
 #include <stdio.h>
 #include <dlfcn.h>
 #include <stdio.h>
@@ -78,7 +78,7 @@ void resolve_sym(void *handle);
     for fun in exported_func:
         resolved_func_codes += f'\t{fun.name} = dlsym(handle, "{fun.name}");\n'
 
-    resolve_code = fr"""#include "stest.h"
+    resolve_code = fr"""#include "{org_filename}.h"
 {global_func_var_codes}
 
 void resolve_sym(void *handle) {{
@@ -93,7 +93,7 @@ CFLAGS=-ldl
 
 all: {org_filename}
 
-stest: main.c stest.c
+{org_filename}: main.c {org_filename}.c
 	$(CC) main.c {org_filename}.c -o {org_filename} -ldl"""
 
     with open(f"{new_directory}/Makefile", "w") as f:
