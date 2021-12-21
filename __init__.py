@@ -5,6 +5,7 @@ import platform
 
 
 def generate_c(exported_func, org_filename, new_directory):
+    exported_func = set(exported_func)
     # Write the main code
     main_code = fr"""#include "{org_filename}.h"
 
@@ -104,21 +105,15 @@ def generate_so(bv, org_filename, new_directory, libc_high):
     tempbin = NamedTemporaryFile()
     bv.save(tempbin.name)
     liefbin = lief.parse(tempbin.name)
-    liefbin_exported_names = list(map(lambda x: x.name, liefbin.exported_functions))
     exported_bv_func = []
-    # Get the exported functions already in lief
-    for func in liefbin.exported_functions:
-        if func.name != "main" and (not func.name.startswith("_")):
-            exported_bv_func.append(bv.get_function_at(func.address))
 
     # Get the exported functions in binaryninja
     for func in set(bv.functions):
         # Check if function is already in elif exported functions
-        if func.name not in liefbin_exported_names:
-            if func.symbol.type == SymbolType.FunctionSymbol:
-                if func.name != "main" and (not func.name.startswith("_")):
-                    liefbin.add_exported_function(func.start, func.name)
-                    exported_bv_func.append(func)
+        if func.symbol.type == SymbolType.FunctionSymbol:
+            if func.name != "main" and (not func.name.startswith("_")):
+                liefbin.add_exported_function(func.start, func.name)
+                exported_bv_func.append(func)
 
     # Check if it uses glibc >= 2.29. You have to patch or else you will get dlopen error: cannot dynamically load position-independent executable
     # Read more on https://lief-project.github.io/doc/latest/tutdlopen%20error:%20cannot%20dynamically%20load%20position-independent%20executableorials/08_elf_bin2lib.html
