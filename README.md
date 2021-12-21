@@ -24,3 +24,4 @@ This plugin is released under an [MIT license](./LICENSE).
 ## Future Work:
 
 - [ ] Add automated structure support
+- [ ] Better Code generation. Some time you get incorrect parameter
