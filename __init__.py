@@ -56,6 +56,7 @@ int main (int argc, char** argv) {{
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 {typedef_codes}
 
@@ -105,13 +106,18 @@ def generate_so(bv, org_filename, new_directory):
     liefbin = lief.parse(tempbin.name)
     liefbin_exported_names = list(map(lambda x: x.name, liefbin.exported_functions))
     exported_bv_func = []
+    # Get the exported functions already in lief
+    for func in liefbin.exported_functions:
+        if func.name != "main" and (not func.name.startswith("_")):
+            exported_bv_func.append(bv.get_function_at(func.address))
+
+    # Get the exported functions in binaryninja
     for func in set(bv.functions):
         # Check if function is already in elif exported functions
         if func.name not in liefbin_exported_names:
             if func.symbol.type == SymbolType.FunctionSymbol:
                 if func.name != "main" and (not func.name.startswith("_")):
                     liefbin.add_exported_function(func.start, func.name)
-                    print(func.name)
                     exported_bv_func.append(func)
 
     # Check if it uses glibc >= 2.29. You have to patch or else you will get dlopen error: cannot dynamically load position-independent executable
